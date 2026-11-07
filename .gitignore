@@ -141,3 +141,6 @@ demo/plugin.tgz
 demo/.strapi
 demo/types/generated
 demo/.strapi-updater.json
+# Demo movie (npm run docs:movie): the MP4 and its working files aren't committed
+test/docs/movie/out/
+test/docs/movie/work/

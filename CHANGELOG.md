@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Docs: a short demo movie at the top of the README (`docs/images/demo.gif`): an editor translates the sample article into German and French and opens the German draft. Recorded from the demo against the stand-in with `npm run docs:movie`.
 - Added: the Supertext support form is linked in the README, the user guide and GitHub's "New issue" page.
 - Added: support for Node.js 26, tested in CI next to Node 20, 22 and 24. Tested with Strapi 5.59 (the demo runs 5.59.0).
 - Added: **Translation review** on/off per locale (*Settings → Supertext → Translation → Languages*, a checkbox in each locale's row, off by default): translations into a locale with *Translation review* ticked go through Supertext's review service (Supertext Localization Review), where customers and Supertext linguists correct them on the website with a Chrome extension; corrections come back into Strapi with the next translation, and texts translated before keep their (reviewed) wording. Same API key, billing, languages and messages; other locales keep going directly to Supertext. New option `reviewUrl` (env `SUPERTEXT_REVIEW_URL`; defaults to Supertext's review service; `''` turns review off everywhere) and `locales.<locale>.review` in `config/plugins` as an override. Saved with the language settings in the core store (existing installations start with review off). All four interface languages.

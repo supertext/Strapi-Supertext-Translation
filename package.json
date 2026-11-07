@@ -39,6 +39,7 @@
   "files": [
     "dist",
     "docs",
+    "!docs/images/demo.gif",
     "README.md",
     "CHANGELOG.md"
   ],
@@ -54,7 +55,8 @@
     "mock": "node test/mock-supertext.mjs",
     "demo:install": "npm run pack:demo && cd demo && npm install ./plugin.tgz --no-audit --no-fund",
     "docs:mock": "node test/mock-sample-de.mjs",
-    "docs:screenshots": "node test/docs-screenshots.mjs"
+    "docs:screenshots": "node test/docs-screenshots.mjs",
+    "docs:movie": "node test/docs-movie.mjs"
   },
   "dependencies": {
     "node-html-parser": "^9.0.5"

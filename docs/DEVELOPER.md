@@ -211,6 +211,24 @@ npm run docs:screenshots
 
 Other ports: `MOCK_PORT` for the stand-in, `PORT` for Strapi and `STRAPI_URL` (e.g. `http://127.0.0.1:20601`) for the script. Start from an empty demo database (`rm -rf demo/.tmp`) so the first translation shows as *created*. The script logs in with `DEMO_ADMIN_EMAIL`/`DEMO_ADMIN_PASSWORD` (the defaults above are local-only), captures the edit view, the panel before/after translating, the German result, the overwrite warning, the settings page, its language combo boxes (`settings-languages.png`) and the locales page, and shows the live endpoint on the settings screenshot instead of the local stand-in's address.
 
+## Demo movie
+
+`docs/images/demo.gif` at the top of the README is a short demo movie (about 30 s, English captions, no sound): the intro card, the English sample article, ticking German and French in the Supertext panel, *Translate with Supertext*, a moment of the progress state (the wait is cut), both drafts created, the German draft opened with *Open*, and the outro card. It is recorded from the local demo against the stand-in, signed in as the demo's editor:
+
+```bash
+MOCK_DELAY_MS=4000 npm run docs:mock &   # stand-in; answers "translating" for 4 s so the progress state shows
+npm run demo:install
+cd demo && rm -rf .tmp && DEMO_ADMIN_EMAIL=anna.muster@example.com DEMO_ADMIN_PASSWORD=Docs12345 \
+  DEMO_EDITOR_EMAIL=eddie.editor@example.com DEMO_EDITOR_PASSWORD=Docs12345 \
+  SUPERTEXT_API_KEY=test-key SUPERTEXT_API_ENDPOINT=http://127.0.0.1:8765/v1/ \
+  SUPERTEXT_REPORT_URL=http://127.0.0.1:8765/report npm run develop &   # plus the variables from demo/.env.example
+cd .. && npm run docs:movie
+```
+
+Start from an empty demo database: the script translates into German and French, so a second run would show the overwrite warning. It signs in with `DEMO_EDITOR_EMAIL`/`DEMO_EDITOR_PASSWORD` (defaults above, local-only); `STRAPI_URL`, `MOCK_PORT`, `PORT` and `CHROME` work as for the screenshots. Recording, captions, cursor and the intro/outro cards come from the shared Supertext movie kit in `test/docs/movie/` (`movie-kit.mjs`, logo and Inter font with its SIL OFL licence; the same kit records every plugin's movie, so don't restyle it here). It needs `ffmpeg`.
+
+The script writes the GIF (800 px, 12 fps, keep it under 3 MB) to `docs/images/demo.gif`, which is committed, and the MP4 (1280×720, H.264) to `test/docs/movie/out/Strapi-Supertext-Translation.mp4` (git-ignored; `MOVIE_OUT` for another path), which isn't committed. The GIF is left out of the npm package. Re-record it when the panel or the demo content changes.
+
 ## Demo deployment (Railway)
 
 The Railway service `Strapi` in project `supertext-cms-demos` builds this repo's `Dockerfile` on every push to `main`. The image builds the plugin, installs it into `demo/`, builds the admin panel and runs `strapi start`.

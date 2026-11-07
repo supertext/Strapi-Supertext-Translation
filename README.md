@@ -4,6 +4,8 @@ Translate Strapi 5 entries into other locales with **Supertext AI**, straight fr
 
 Open an entry, tick the languages in the **Supertext translation** panel, click **Translate with Supertext** — the plugin translates every localized text field (including rich text, components and dynamic zones) in one request per language and saves the result as a draft for review.
 
+![Demo: in Strapi's Content Manager an editor ticks German and French in the Supertext translation panel, clicks Translate with Supertext and opens the German draft of the article](docs/images/demo.gif)
+
 - Works with Strapi's built-in internationalization (i18n) and its role permissions per locale
 - Keeps rich-text formatting and links; copies numbers, dates and media; rebuilds URL slugs
 - A Supertext language per locale, chosen in a combo box under *Settings → Supertext* (obvious defaults preselected), and formal/informal tone where Supertext offers it
