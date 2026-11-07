@@ -115,3 +115,7 @@ The panel shows the reason next to the language that failed, in red, and the oth
 
 - Translate into several languages at once; each language is one request to Supertext.
 - Keep the source entry tidy (headings, lists) — the structure is carried over to every language.
+
+## Support
+
+Questions, problems or ideas: use the [Supertext support form](https://integrations.supertext.com/en/support?platform=strapi). Mention the version of Strapi and of the plugin, what you did and what you expected; an error message helps a lot. You get an answer by email, in your language.
