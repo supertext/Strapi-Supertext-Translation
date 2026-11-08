@@ -56,7 +56,8 @@
     "demo:install": "npm run pack:demo && cd demo && npm install ./plugin.tgz --no-audit --no-fund",
     "docs:mock": "node test/mock-sample-de.mjs",
     "docs:screenshots": "node test/docs-screenshots.mjs",
-    "docs:movie": "node test/docs-movie.mjs"
+    "docs:movie": "node test/docs-movie.mjs",
+    "docs:movie:install": "node test/docs-movie-install.mjs"
   },
   "dependencies": {
     "node-html-parser": "^9.0.5"
