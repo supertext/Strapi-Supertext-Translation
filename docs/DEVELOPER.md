@@ -213,10 +213,11 @@ Other ports: `MOCK_PORT` for the stand-in, `PORT` for Strapi and `STRAPI_URL` (e
 
 ## Demo movie
 
-`docs/images/demo.gif` at the top of the README is a short demo movie (about 30 s, English captions, no sound): the intro card, the English sample article, ticking German and French in the Supertext panel, *Translate with Supertext*, a moment of the progress state (the wait is cut), both drafts created, the German draft opened with *Open*, and the outro card. It is recorded from the local demo against the stand-in, signed in as the demo's editor:
+`docs/images/demo.gif` at the top of the README is a short demo movie (English captions; the GIF is silent, the MP4 of about 37 s has a spoken voice-over): the intro card, the English sample article, ticking German and French in the Supertext panel, *Translate with Supertext*, a moment of the progress state (the wait is cut), both drafts created, the German draft opened with *Open*, and the outro card. It is recorded from the local demo against the stand-in, signed in as the demo's editor:
 
 ```bash
-MOCK_DELAY_MS=4000 npm run docs:mock &   # stand-in; answers "translating" for 4 s so the progress state shows
+pip install piper-tts                      # once: the voice (without it the movie is silent)
+MOCK_DELAY_MS=7000 npm run docs:mock &   # stand-in; answers "translating" for 7 s so the progress state shows while it is said
 npm run demo:install
 cd demo && rm -rf .tmp && DEMO_ADMIN_EMAIL=anna.muster@example.com DEMO_ADMIN_PASSWORD=Docs12345 \
   DEMO_EDITOR_EMAIL=eddie.editor@example.com DEMO_EDITOR_PASSWORD=Docs12345 \
@@ -226,6 +227,10 @@ cd .. && npm run docs:movie
 ```
 
 Start from an empty demo database: the script translates into German and French, so a second run would show the overwrite warning. It signs in with `DEMO_EDITOR_EMAIL`/`DEMO_EDITOR_PASSWORD` (defaults above, local-only); `STRAPI_URL`, `MOCK_PORT`, `PORT` and `CHROME` work as for the screenshots. Recording, captions, cursor and the intro/outro cards come from the shared Supertext movie kit in `test/docs/movie/` (`movie-kit.mjs`, logo and Inter font with its SIL OFL licence; the same kit records every plugin's movie, so don't restyle it here). It needs `ffmpeg`.
+
+**Voice:** each step is spoken with Piper (`pip install piper-tts`) and the voice *alba*; the caption shows a shorter version of the same sentence (`kit.say()` in `test/docs-movie.mjs`). The voice model (63 MB, pinned revision, SHA-256 checked) downloads once into `~/.cache/supertext-movie` and is never committed. Time spent generating speech is cut out of the movie. Without Piper, or with `MOVIE_VOICE=0`, the movie is made without sound. The voice is mixed into the MP4 (AAC, loudness-normalised); the GIF has no sound.
+
+Voice: Piper voice “alba” (en_GB), trained on a dataset from the University of Edinburgh's Centre for Speech Technology Research, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 The script writes the GIF (800 px, 12 fps, keep it under 3 MB) to `docs/images/demo.gif`, which is committed, and the MP4 (1280×720, H.264) to `test/docs/movie/out/Strapi-Supertext-Translation.mp4` (git-ignored; `MOVIE_OUT` for another path), which isn't committed. The GIF is left out of the npm package. Re-record it when the panel or the demo content changes.
 

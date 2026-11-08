@@ -36,38 +36,40 @@ const center = (locator) => locator.evaluate((el) => el.scrollIntoView({ block: 
 const kit = await MovieKit.start(page, { workDir: path.join(HERE, 'work'), assets: path.join(HERE, 'assets') });
 
 // 1. The entry in the source language
-await kit.caption('An article in English', 2600);
+await kit.say("Here's an article in English.", { caption: 'An article in English' });
 
 // 2. The Supertext panel: pick the languages and translate
 const german = page.getByRole('checkbox', { name: /German/ });
 const french = page.getByRole('checkbox', { name: /French/ });
 const translate = page.getByRole('button', { name: 'Translate with Supertext' });
-await center(translate);
-await kit.caption('In the Supertext panel, tick <b>German</b> and <b>French</b>');
-await kit.moveTo(german);
-await kit.hold(900);
-await kit.click(german);
-await kit.click(french);
-await kit.hold(900);
-await kit.caption('Click <b>Translate with Supertext</b>');
-await kit.moveTo(translate);
-await kit.hold(1200);
-await kit.click(translate);
+await kit.say('In the Supertext panel, tick German and French.', {
+  caption: 'In the Supertext panel, tick <b>German</b> and <b>French</b>',
+  during: async () => { await center(translate); await kit.moveTo(german); await kit.click(german); await kit.click(french); },
+});
+await kit.say('Then click Translate with Supertext.', {
+  caption: 'Click <b>Translate with Supertext</b>',
+  during: async () => { await kit.moveTo(translate); await kit.hold(500); await kit.click(translate); },
+});
 
 // 3. Waiting: a moment of the progress state, then cut until it's done
-await kit.caption('Supertext translates the content…', 1300);
+await kit.say('Supertext translates the content.', { caption: 'Supertext translates the content…' });
 kit.pause();
 await page.getByText(/created \(/).first().waitFor({ timeout: 120000 });
 await page.waitForTimeout(500);
 kit.resume();
-await kit.caption('Both translations are saved as drafts', 2800);
+await kit.say('A few seconds later, both translations are saved as drafts.', { caption: 'Both translations are saved as drafts' });
 
 // 4. The German version, opened the way an editor checks it
 const open = page.getByRole('button', { name: 'Open' }).first();
-await kit.caption('Click <b>Open</b> to check the German version');
-await kit.moveTo(open);
-await kit.hold(900);
-await kit.click(open);
+await kit.say("Click Open to check the German version.", {
+  caption: 'Click <b>Open</b> to check the German version',
+  during: () => kit.moveTo(open),
+  after: 0,
+});
+// The cursor is already on Open: click right away (no second move), then cut the loading.
+await page.evaluate(([x, y]) => window.__stk?.ripple(x, y), [kit.cursor.x, kit.cursor.y]);
+await open.click();
+await page.waitForTimeout(250);
 kit.pause(); // loading the German entry is cut
 await page.getByText('Schweizer Schokolade, weltweit geliefert').first().waitFor({ timeout: 30000 });
 for (const b of await page.getByRole('button', { name: /close/i }).all()) await b.click().catch(() => {});
@@ -76,8 +78,11 @@ await page.waitForTimeout(1500);
 await page.evaluate(() => { window.scrollTo(0, 0); for (const el of document.querySelectorAll('*')) if (el.scrollTop > 0) el.scrollTop = 0; });
 await page.waitForTimeout(400);
 kit.resume();
-await kit.moveTo(page.getByRole('heading', { name: /Schweizer Schokolade/ }).first());
-await kit.caption('The German version is ready – review it and publish', 3500);
+await kit.say('Here is the German version. Review it, and publish it as usual.', {
+  caption: 'The German version is ready – review it and publish',
+  during: () => kit.moveTo(page.getByRole('heading', { name: /Schweizer Schokolade/ }).first()),
+  after: 500,
+});
 
 await kit.finish(OUT, { system: 'Strapi', repo: 'Strapi-Supertext-Translation', gif: GIF });
 await browser.close();
