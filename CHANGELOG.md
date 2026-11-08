@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Tested with Strapi 5.61 (the demo moved from 5.59.0 to 5.61.0).
 - Docs: a short demo movie at the top of the README (`docs/images/demo.gif`): an editor translates the sample article into German and French and opens the German draft. Recorded from the demo against the stand-in with `npm run docs:movie`. The MP4 version (not committed) has an English voice-over (Piper voice “alba”, CC BY 4.0; `pip install piper-tts`, `MOVIE_VOICE=0` for none).
 - Added: the Supertext support form is linked in the README, the user guide and GitHub's "New issue" page.
 - Added: support for Node.js 26, tested in CI next to Node 20, 22 and 24. Tested with Strapi 5.59 (the demo runs 5.59.0).
