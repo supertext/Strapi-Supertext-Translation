@@ -257,6 +257,8 @@ On every start the demo also ensures the locales de-CH, fr-CH and it-CH, gives S
 
 Dependabot (`.github/dependabot.yml`) opens weekly pull requests: minor and patch updates grouped into one, GitHub Actions in another, each major update on its own. Merge one when CI is green and it doesn't change what the plugin supports.
 
+`.github/workflows/dependabot-merge.yml` merges a minor or patch package update by itself once every other check on its pull request has passed (it waits up to 85 minutes and leaves the pull request alone if a check fails). GitHub Actions updates and majors stay for a person: the workflow's built-in token can't merge changes to workflow files, and a major needs a decision. Merges by the workflow don't start CI on `main`; the weekly health check looks at `main`.
+
 Some major versions are ignored on purpose: TypeScript (7.x is the native compiler, which the type-checking and build tools here don't support yet) and `@types/node` (the types must match the oldest Node version the plugin supports, not the newest). In Strapi also React, React DOM and their types, react-router-dom and react-intl: Strapi 5's admin provides React 18, react-router-dom 6 and react-intl 6 itself, so the plugin must match them. Lift an ignore rule when the plugin moves to the new version.
 
 ## Code quality and security checks
