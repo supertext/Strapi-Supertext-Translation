@@ -1,6 +1,6 @@
 {
   "name": "strapi-plugin-supertext-translation",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Supertext AI translation for Strapi 5: translate entries into other locales from the Content Manager.",
   "keywords": [
     "strapi",
