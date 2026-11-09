@@ -92,12 +92,16 @@
     "styled-components": "^6.5.3"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   },
   "strapi": {
     "kind": "plugin",
     "name": "supertext",
     "displayName": "Supertext",
     "description": "Translate entries into other locales with Supertext AI."
+  },
+  "overrides": {
+    "zod@4": "^4.6.7",
+    "nodemailer": "^10.4.0"
   }
 }

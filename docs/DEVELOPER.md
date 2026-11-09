@@ -191,7 +191,7 @@ Server errors are English (`message`, for logs and API clients) and carry a `cod
 | `test/status.test.ts` | Version from `package.json`, status without the key |
 | `test/reporting.test.ts` | The setting and the environment, site URL, state kept in the store (never the key), one `installed` report, a changed key checked again, a 401 reported once as `api_key_check`, *Test connection*, nothing sent with reports off, ping answers, no exception when the store fails (fake fetch, never the live API or center) |
 
-CI (`.github/workflows/ci.yml`) runs type checks, tests and the build on Node 20, 22, 24 and 26, then builds the demo admin panel with the packed plugin.
+CI (`.github/workflows/ci.yml`) runs type checks, tests and the build on Node 22, 24 and 26, then builds the demo admin panel with the packed plugin.
 
 The end-to-end flow (translate, overwrite, permissions, error responses, admin panel UI) was verified manually against the demo and the mock API; there are no automated end-to-end tests yet.
 
@@ -259,7 +259,9 @@ Dependabot (`.github/dependabot.yml`) opens weekly pull requests: minor and patc
 
 `.github/workflows/dependabot-merge.yml` merges a minor or patch package update by itself once every other check on its pull request has passed (it waits up to 85 minutes and leaves the pull request alone if a check fails). GitHub Actions updates and majors stay for a person: the workflow's built-in token can't merge changes to workflow files, and a major needs a decision. Merges by the workflow don't start CI on `main`; the weekly health check looks at `main`.
 
-Some major versions are ignored on purpose: TypeScript (7.x is the native compiler, which the type-checking and build tools here don't support yet) and `@types/node` (the types must match the oldest Node version the plugin supports, not the newest). In Strapi also React, React DOM and their types, react-router-dom and react-intl: Strapi 5's admin provides React 18, react-router-dom 6 and react-intl 6 itself, so the plugin must match them. Lift an ignore rule when the plugin moves to the new version.
+Some major versions are ignored on purpose: TypeScript (7.x is the native compiler; `@strapi/sdk-plugin` pins TypeScript 5.9.3 and its `vite-plugin-dts`/Volar need a TypeScript below 7, checked November 2026) and `@types/node` (the types must match the oldest Node version the plugin supports, not the newest). In Strapi also React, React DOM and their types, react-router-dom and react-intl: Strapi 5's admin provides React 18, react-router-dom 6 and react-intl 6 itself, so the plugin must match them. Lift an ignore rule when the plugin moves to the new version.
+
+`overrides` in `package.json` and `demo/package.json` lift two packages Strapi pins exactly to their fixed versions (security advisories): `zod` 4.x to 4.6.7 or newer and `nodemailer` to 10.4 or newer. Remove them once Strapi ships those versions itself. Advisories that remain (November 2026) need a major Strapi doesn't take yet: `zod` 3 inside `koa-body`/`koa-session`, `stream-json` 1 and `glob` 13 (pinned by Strapi), `@hono/node-server` 1, `minimatch` below 11, `deepmerge` (no fixed version) and `react-router` 6 (Strapi 5's admin provides it).
 
 ## Code quality and security checks
 

@@ -28,5 +28,9 @@
   },
   "optionalDependencies": {
     "better-sqlite3": "^13.0.3"
+  },
+  "overrides": {
+    "zod@4": "^4.6.7",
+    "nodemailer": "^10.4.0"
   }
 }

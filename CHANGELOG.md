@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Removed: support for Node.js 20 (end of life since 30 April 2026). The plugin now needs Node.js 22 or newer (`engines`), like current Strapi 5; CI tests Node 22, 24 and 26.
+- Security: the development setup and the demo force the fixed versions of `zod` 4 (4.6.7) and `nodemailer` (10.4) that Strapi pins to vulnerable releases (npm `overrides`), and take the fixed `fast-uri` and `follow-redirects`. No change to the plugin itself.
 - Tested with Strapi 5.61 (the demo moved from 5.59.0 to 5.61.0).
 - Docs: a short demo movie at the top of the README (`docs/images/demo.gif`): an editor translates the sample article into German and French and opens the German draft. Recorded from the demo against the stand-in with `npm run docs:movie`. The MP4 version (not committed) has an English voice-over (Piper voice “alba”, CC BY 4.0; `pip install piper-tts`, `MOVIE_VOICE=0` for none).
 - Docs: an install and configuration movie (MP4 with voice-over, not committed), recorded with `npm run docs:movie:install`: the install commands from the installation guide, then *Settings → Supertext → Translation* (key check, language mapping) as an administrator.
