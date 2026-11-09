@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { politenessFor, sourceCode, supportsPoliteness, targetCode, targetCodeOrNull } from '../server/src/supertext/languages';
+import { politenessFor, sourceCode, suggestTarget, supportsPoliteness, targetCode, targetCodeOrNull, targetOptions } from '../server/src/supertext/languages';
 
-describe('language codes (no guessing)', () => {
+describe('language codes (mapping, exact match, default)', () => {
   it('sends a bare source language', () => {
     expect(sourceCode('en')).toBe('en');
     expect(sourceCode('')).toBe('');
@@ -18,11 +18,23 @@ describe('language codes (no guessing)', () => {
     expect(targetCode('zh-hant')).toBe('zh-Hant');
   });
 
-  it('refuses locales Supertext does not have, without a default region', () => {
-    for (const code of ['de', 'en', 'sl-SI', 'es-ES', 'zh-CN', 'xx']) {
+  it('uses the SDK default where one is obvious', () => {
+    expect(targetCode('de')).toBe('de-DE');
+    expect(targetCode('en')).toBe('en-US');
+    expect(targetCode('pt')).toBe('pt-PT');
+    expect(targetCode('zh-CN')).toBe('zh-Hans');
+    expect(targetCode('zh-TW')).toBe('zh-Hant');
+    expect(targetCode('es-ES')).toBe('es');
+    expect(suggestTarget('de')).toBe('de-DE');
+    expect(suggestTarget('fr_ch')).toBe('fr-CH');
+  });
+
+  it('refuses locales without a mapping, a match or a default', () => {
+    for (const code of ['en-IE', 'de-LI', 'gsw', 'xx']) {
       expect(() => targetCode(code), code).toThrow(expect.objectContaining({ code: 'unsupportedLanguage', values: { language: code } }));
+      expect(suggestTarget(code), code).toBeNull();
     }
-    expect(targetCodeOrNull('de')).toBeNull();
+    expect(targetCodeOrNull('de-LI')).toBeNull();
     expect(() => sourceCode('xx')).toThrow(expect.objectContaining({ code: 'unsupportedLanguage' }));
   });
 
@@ -50,5 +62,12 @@ describe('language codes (no guessing)', () => {
     expect(() => politenessFor('en-US', 'more', 'en')).toThrow(expect.objectContaining({ code: 'unsupportedFeature', values: { language: 'en' } }));
     // A mapped code the SDK doesn't list: sent as configured.
     expect(politenessFor('xx-YY', 'less')).toBe('less');
+  });
+
+  it('offers every Supertext target for the combo box', () => {
+    const options = targetOptions();
+    expect(options.length).toBe(37);
+    expect(options).toContainEqual({ code: 'de-CH', name: 'German (Switzerland)', politeness: true });
+    expect(options.find((o) => o.code === 'en-US')?.politeness).toBe(false);
   });
 });

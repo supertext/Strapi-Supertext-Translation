@@ -1,4 +1,4 @@
-import { LIVE_ENDPOINT, type Politeness } from '../supertext/client';
+import { LIVE_ENDPOINT, REVIEW_URL, type Politeness } from '../supertext/client';
 
 export interface LocaleOptions {
   /**
@@ -8,6 +8,11 @@ export interface LocaleOptions {
   code?: string;
   /** "more" = formal (Sie/vous), "less" = informal (du/tu). */
   politeness?: Politeness;
+  /**
+   * Translation review: translations into this locale go through Supertext's review service
+   * (`reviewUrl`). Overrides the checkbox under Settings → Supertext → Translation.
+   */
+  review?: boolean;
 }
 
 export interface PluginConfig {
@@ -15,6 +20,11 @@ export interface PluginConfig {
   apiKey?: string;
   /** API base URL. Defaults to SUPERTEXT_API_ENDPOINT or the live API. */
   endpoint?: string;
+  /**
+   * The review service for locales with *Translation review* on. Defaults to SUPERTEXT_REVIEW_URL
+   * or Supertext's review service; '' turns review off for every locale.
+   */
+  reviewUrl: string;
   pollIntervalMs: number;
   pollTimeoutMs: number;
   /** Per-locale options, keyed by Strapi locale code (e.g. "de-CH"). */
@@ -32,6 +42,8 @@ export default {
   default: (): PluginConfig => ({
     apiKey: process.env.SUPERTEXT_API_KEY,
     endpoint: process.env.SUPERTEXT_API_ENDPOINT || LIVE_ENDPOINT,
+    // An empty SUPERTEXT_REVIEW_URL keeps the default; set reviewUrl: '' to turn review off.
+    reviewUrl: process.env.SUPERTEXT_REVIEW_URL || REVIEW_URL,
     pollIntervalMs: 2000,
     pollTimeoutMs: 180_000,
     locales: {},
@@ -43,6 +55,12 @@ export default {
       if (options?.politeness && !['default', 'more', 'less'].includes(options.politeness)) {
         throw new Error(`supertext: locales.${locale}.politeness must be "default", "more" or "less".`);
       }
+      if (options?.review !== undefined && typeof options.review !== 'boolean') {
+        throw new Error(`supertext: locales.${locale}.review must be true or false.`);
+      }
+    }
+    if (config.reviewUrl !== undefined && typeof config.reviewUrl !== 'string') {
+      throw new Error('supertext: reviewUrl must be a URL or an empty string.');
     }
     if (config.versionReports !== undefined && typeof config.versionReports !== 'boolean') {
       throw new Error('supertext: versionReports must be true or false.');

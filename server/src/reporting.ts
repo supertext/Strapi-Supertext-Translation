@@ -25,10 +25,10 @@ import {
 import { SDK_VERSION } from './vendor/supertext-sdk/index';
 import { apiKeyFingerprint, SupertextClient, type SupertextClientOptions } from './vendor/supertext-sdk/v1/index';
 import { LIVE_ENDPOINT, USER_AGENT } from './supertext/client';
-import { pluginVersion } from './version';
+import { PLUGIN_NAME, pluginVersion } from './version';
 
 /** The GitHub repository name: the center reads the latest release from it. */
-export const PLUGIN_NAME = 'Strapi-Supertext-Translation';
+export { PLUGIN_NAME };
 /** The ping route below Strapi's REST prefix (content API route `GET /ping` of the plugin `supertext`). */
 export const PING_PATH = '/supertext/ping';
 

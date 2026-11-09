@@ -35,6 +35,11 @@ await page.getByText(/^Last checked:/).evaluate((el) => (el.textContent = 'Last 
 await page.setViewportSize({ width: 1400, height: 1240 });
 await page.waitForTimeout(500);
 await shot('settings', { clip: { x: 0, y: 0, width: 1400, height: 1030 } });
+// The language combo boxes: clip to the Languages card, one select opened would hide the rows.
+const languagesCard = page.getByRole('heading', { name: 'Languages' }).locator('xpath=ancestor::div[contains(@class, "") and .//table][1]');
+await languagesCard.scrollIntoViewIfNeeded();
+await page.waitForTimeout(400);
+await languagesCard.screenshot({ path: `${OUT}/settings-languages.png` });
 await page.setViewportSize({ width: 1400, height: 940 });
 await page.goto(`${B}/admin/settings/internationalization`);
 await page.waitForTimeout(2500);

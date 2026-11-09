@@ -4,6 +4,9 @@ import { dirname, join } from 'node:path';
 
 export const PACKAGE_NAME = 'strapi-plugin-supertext-translation';
 
+/** The plugin's name in version reports, translation files and the User-Agent (the GitHub repository's name). */
+export const PLUGIN_NAME = 'Strapi-Supertext-Translation';
+
 let cached: string | null | undefined;
 
 /** Walks up from `start` to the plugin's own package.json. */

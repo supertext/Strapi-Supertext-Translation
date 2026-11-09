@@ -57,7 +57,7 @@ describe('admin translations', () => {
   });
 
   it('has a message for every error code the server sends', () => {
-    const server = ['controllers/translate.ts', 'services/translator.ts', 'supertext/client.ts']
+    const server = ['controllers/translate.ts', 'services/translator.ts', 'services/files.ts', 'supertext/client.ts']
       .map((file) => readFileSync(join(__dirname, '../server/src', file), 'utf8'))
       .join('\n');
     const codes = new Set([

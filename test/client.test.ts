@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { SupertextClient } from '../server/src/supertext/client';
+import { REVIEW_URL, SupertextClient, USER_AGENT } from '../server/src/supertext/client';
+import pluginConfig from '../server/src/config';
 
 type Call = { method: string; url: string; body?: FormData };
 
@@ -112,5 +113,69 @@ describe('rate limiting', () => {
     const { retryDelayMs } = await import('../server/src/vendor/supertext-sdk/v1/index');
     expect(retryDelayMs(0, '3')).toBe(3000);
     expect(retryDelayMs(1, null)).toBeGreaterThanOrEqual(2000);
+  });
+
+  describe('Translation review', () => {
+    const roundTrip = () =>
+      fakeFetch(({ method, url }) => {
+        if (method === 'POST') return Response.json({ file_id: 'f1' });
+        if (url.endsWith('/status')) return Response.json({ status: 'done' });
+        if (url.endsWith('/translation')) return new Response('<div data-st-id="0">Hallo</div>');
+        return Response.json({});
+      });
+    const calls = (list: { method: string; url: string }[]) => list.map((c) => `${c.method} ${c.url}`);
+
+    it('sends a review locale through the review service (all four calls) and the others directly', async () => {
+      const { fn, calls: made } = roundTrip();
+      const client = new SupertextClient({ apiKey: 'k', endpoint: 'https://api.test/v1', reviewEndpoint: 'https://review.test/v1/', pollIntervalMs: 1, fetch: fn });
+      expect(client.forReview(false)).toBe(client);
+      const review = client.forReview(true);
+      expect(review).not.toBe(client);
+      expect(client.forReview(true)).toBe(review); // one review client
+
+      await review.translateDocument('<div data-st-id="0">Hi</div>', { targetLanguage: 'de-CH' });
+      expect(calls(made)).toEqual([
+        'POST https://review.test/v1/translate/ai/file',
+        'GET https://review.test/v1/translate/ai/file/f1/status',
+        'GET https://review.test/v1/translate/ai/file/f1/translation',
+        'DELETE https://review.test/v1/translate/ai/file/f1',
+      ]);
+      // Same key and User-Agent as the direct client.
+      expect(made.every((c) => c.headers.get('authorization') === 'Supertext-Auth-Key k')).toBe(true);
+      expect(made[0].headers.get('user-agent')).toContain(USER_AGENT);
+
+      made.length = 0;
+      await client.translateDocument('<div data-st-id="0">Hi</div>', { targetLanguage: 'fr-CH' });
+      expect(made.every((c) => c.url.startsWith('https://api.test/v1/'))).toBe(true);
+      expect(made).toHaveLength(4);
+    });
+
+    it('is off with an empty review URL or the same URL as the API', () => {
+      expect(new SupertextClient({ apiKey: 'k', reviewEndpoint: '' }).forReview(true)).toBeInstanceOf(SupertextClient);
+      const off = new SupertextClient({ apiKey: 'k', reviewEndpoint: '' });
+      expect(off.forReview(true)).toBe(off);
+      const same = new SupertextClient({ apiKey: 'k', endpoint: 'https://api.test/v1', reviewEndpoint: 'https://api.test/v1/' });
+      expect(same.forReview(true)).toBe(same);
+    });
+
+    it('defaults to Supertext’s review service (SUPERTEXT_REVIEW_URL overrides it)', () => {
+      const before = process.env.SUPERTEXT_REVIEW_URL;
+      try {
+        delete process.env.SUPERTEXT_REVIEW_URL;
+        expect(pluginConfig.default().reviewUrl).toBe(REVIEW_URL);
+        expect(REVIEW_URL).toBe('https://localizationreview-production.up.railway.app/v1/');
+        process.env.SUPERTEXT_REVIEW_URL = 'http://localhost:3000/v1/';
+        expect(pluginConfig.default().reviewUrl).toBe('http://localhost:3000/v1/');
+      } finally {
+        if (before === undefined) delete process.env.SUPERTEXT_REVIEW_URL;
+        else process.env.SUPERTEXT_REVIEW_URL = before;
+      }
+      expect(() => pluginConfig.validator({ locales: { de: { review: 'yes' as never } } })).toThrow(/review/);
+      expect(() => pluginConfig.validator({ reviewUrl: 3 as never })).toThrow(/reviewUrl/);
+    });
+
+    it('names the plugin and its version in the User-Agent', () => {
+      expect(USER_AGENT).toMatch(/^Strapi-Supertext-Translation\/\d+\.\d+\.\d+/);
+    });
   });
 });

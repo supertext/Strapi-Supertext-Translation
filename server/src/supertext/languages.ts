@@ -3,13 +3,23 @@ import { fromSdkError, type Politeness } from './client';
 
 /**
  * Strapi locales → Supertext codes, with the Supertext SDK's rules (the same in every Supertext
- * plugin, no guessing): the locale's `code` option in the plugin configuration wins (sent as it
- * is); otherwise a Strapi locale that equals a Supertext code apart from case and `_`/`-` is used
- * (`de-CH`, `fr_ch` → `fr-CH`, `es`); anything else is the error `unsupportedLanguage` and nothing
- * is sent. There are no default regions: `de` must be mapped (to `de-DE`, `de-CH` or `de-AT`).
- * Sources are bare (`en-US` → `en`).
+ * plugin): the locale's mapping wins (the combo box under Settings → Supertext, or `code` under
+ * `locales` in config/plugins, which overrides it; sent as it is); otherwise a Strapi locale that
+ * equals a Supertext code apart from case and `_`/`-` is used (`de-CH`, `fr_ch` → `fr-CH`, `es`);
+ * otherwise the SDK's default where one is obvious (`de` → `de-DE`, `en` → `en-US`, `zh-TW` →
+ * `zh-Hant`, `es-ES` → `es`); anything else (`en-IE`, `de-LI`, `gsw`) is the error
+ * `unsupportedLanguage` and nothing is sent. Sources are bare (`en-US` → `en`).
  */
 export const SUPERTEXT_TARGETS = Languages.TARGETS;
+
+/** The targets for the combo box (sorted by English name): code, name and whether formal/informal is offered. */
+export const targetOptions = () => Languages.targetOptions().map(({ code, name, politeness }) => ({ code, name, politeness }));
+
+/** What the combo box preselects for a locale nobody mapped: the exact match, else the default, else null. */
+export const suggestTarget = (locale: string): string | null => Languages.suggestTarget(locale);
+
+/** The canonical Supertext target code for a value from the combo box, null if it isn't one. */
+export const canonicalTarget = (code: string): string | null => Languages.matchTarget(code);
 
 const plugin = <T>(run: () => T): T => {
   try {
@@ -19,12 +29,12 @@ const plugin = <T>(run: () => T): T => {
   }
 };
 
-/** Target code for a Strapi locale: the configured `code` wins, else an exact Supertext code, else `unsupportedLanguage`. */
+/** Target code for a Strapi locale: the mapping wins, else an exact Supertext code, else the default, else `unsupportedLanguage`. */
 export function targetCode(locale: string, override?: string): string {
   return plugin(() => Languages.target(locale, override ? { [locale]: override } : undefined));
 }
 
-/** The target code, or null when the locale isn't mapped (for the settings page). */
+/** The target code, or null when the locale has no mapping, no match and no default (for the settings page). */
 export function targetCodeOrNull(locale: string, override?: string): string | null {
   try {
     return targetCode(locale, override);

@@ -1,6 +1,7 @@
 import type { StrapiApp } from '@strapi/strapi/admin';
 import { Initializer } from './components/Initializer';
 import { SupertextPanel } from './components/SupertextPanel';
+import { PERMISSIONS } from './api';
 import { PLUGIN_ID } from './pluginId';
 import { getTranslation } from './utils/getTranslation';
 
@@ -20,7 +21,7 @@ const plugin: StrapiApp['appPlugins'][string] = {
         to: PLUGIN_ID,
         intlLabel: { id: getTranslation('settings.link'), defaultMessage: 'Translation' },
         Component: () => import('./pages/Settings'),
-        permissions: [],
+        permissions: PERMISSIONS.read,
       }
     );
   },

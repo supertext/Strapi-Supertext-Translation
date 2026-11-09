@@ -26,6 +26,8 @@ const LINES = {
   '- Recyclable packaging': '- Rezyklierbare Verpackung',
 };
 const files = new Map();
+// MOCK_DELAY_MS: answer `translating` for that long after an upload (the demo movie shows the progress state).
+const DELAY = Number(process.env.MOCK_DELAY_MS || 0); const uploaded = new Map();
 const tr = (t) => DE[t] ?? DE[t.trim()] ?? t.split(/(\r?\n)/).map((l) => LINES[l] ?? l).join('');
 http.createServer(async (req, res) => {
   const u = new URL(req.url, 'http://x'); const p = u.pathname.replace(/^\/v1/, '');
@@ -36,11 +38,11 @@ http.createServer(async (req, res) => {
   if (req.method === 'POST') {
     const chunks = []; for await (const c of req) chunks.push(c);
     const form = await new Request('http://x', { method: 'POST', headers: req.headers, body: Buffer.concat(chunks) }).formData();
-    const id = randomBytes(6).toString('hex'); files.set(id, await form.get('file').text()); return send(200, { file_id: id });
+    const id = randomBytes(6).toString('hex'); files.set(id, await form.get('file').text()); uploaded.set(id, Date.now()); return send(200, { file_id: id });
   }
   const m = p.match(/file\/([a-f0-9]+)(\/status|\/translation)?$/); if (!m) return send(404, {});
   if (req.method === 'DELETE') return send(200, {});
-  if (m[2] === '/status') return send(200, { status: 'done' });
+  if (m[2] === '/status') return send(200, { status: Date.now() - (uploaded.get(m[1]) ?? 0) < DELAY ? 'translating' : 'done' });
   const root = parse(files.get(m[1]), { comment: false });
   const walk = (n) => { if (n instanceof TextNode) { if (n.rawText.trim()) n.rawText = tr(n.text).replace(/&/g,'&amp;').replace(/</g,'&lt;'); } else n.childNodes?.forEach(walk); };
   // plain-text segments arrive with <br>; translate each text node

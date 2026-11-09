@@ -121,7 +121,7 @@ async function grantEditorAllLocales(strapi, localeCodes) {
 module.exports = {
   register() {},
 
-  /** Demo setup: admin accounts from env, Swiss locales, one English sample article. */
+  /** Demo setup: admin accounts from env, Swiss locales, Supertext language settings, one English sample article. */
   async bootstrap({ strapi }) {
     try {
       await ensureAccounts(strapi);
@@ -142,6 +142,17 @@ module.exports = {
       await grantEditorAllLocales(strapi, (await locales.find()).map((locale) => locale.code));
     } catch (error) {
       strapi.log.warn(`[demo] Could not grant locales to the Editor role: ${error.message}`);
+    }
+
+    // Settings → Supertext → Languages: formal address for the Swiss locales, only if nothing is
+    // saved yet (an administrator's choices are never overwritten). en uses the default en-US.
+    const languages = { type: 'plugin', name: 'supertext', key: 'languages' };
+    if (!(await strapi.store.get(languages))) {
+      await strapi.store.set({
+        ...languages,
+        value: { 'de-CH': { code: 'de-CH', politeness: 'more' }, 'fr-CH': { code: 'fr-CH', politeness: 'more' }, 'it-CH': { code: 'it-CH', politeness: 'more' } },
+      });
+      strapi.log.info('[demo] Saved the Supertext language settings');
     }
 
     const articles = strapi.documents('api::article.article');

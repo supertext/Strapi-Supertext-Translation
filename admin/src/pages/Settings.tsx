@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { useIntl } from 'react-intl';
-import { Box, Button, Flex, Table, Tbody, Td, Th, Thead, Tr, Typography } from '@strapi/design-system';
+import { Box, Button, Flex, Typography } from '@strapi/design-system';
 import { Layouts, Page, useFetchClient, useNotification } from '@strapi/strapi/admin';
 import { apiError, type KeyCheck, type PluginStatus } from '../api';
 import { PLUGIN_ID } from '../pluginId';
 import { errorText } from '../utils/errorText';
 import { getTranslation } from '../utils/getTranslation';
+import { LanguagesCard } from '../components/LanguagesCard';
 
 const SIGNUP_URL = 'https://www.supertext.com/person/en/account/signin';
 const API_KEY_URL = 'https://www.supertext.com/en/integrations/api';
@@ -19,9 +20,9 @@ const link = (href: string) => (chunks: React.ReactNode) => (
 );
 
 /**
- * Read-only overview: whether an API key is set and the latest key check, which endpoint is
- * used, whether version information is sent, and how each Strapi locale maps to Supertext.
- * Configuration lives in config/plugins.
+ * Settings → Supertext → Translation: whether an API key is set and the latest key check, which
+ * endpoint is used, whether version information is sent (all from config/plugins and the
+ * environment), and the language mapping, one combo box per Strapi locale (LanguagesCard).
  */
 const Settings = () => {
   const { formatMessage, locale } = useIntl();
@@ -66,9 +67,6 @@ const Settings = () => {
   if (!status) {
     return <Page.Loading />;
   }
-
-  const politeness = (value?: string) =>
-    value === 'more' ? t('settings.formal', 'Formal') : value === 'less' ? t('settings.informal', 'Informal') : '–';
 
   return (
     <Layouts.Root>
@@ -163,55 +161,7 @@ const Settings = () => {
               </Flex>
             </Box>
 
-            <Box background="neutral0" hasRadius shadow="filterShadow" padding={6}>
-              <Flex direction="column" alignItems="stretch" gap={4}>
-                <Typography variant="delta" tag="h2">
-                  {t('settings.languages', 'Languages')}
-                </Typography>
-                <Table colCount={3} rowCount={status.languages.length + 1}>
-                  <Thead>
-                    <Tr>
-                      <Th><Typography variant="sigma">{t('settings.col.locale', 'Strapi locale')}</Typography></Th>
-                      <Th><Typography variant="sigma">{t('settings.col.code', 'Sent to Supertext as')}</Typography></Th>
-                      <Th><Typography variant="sigma">{t('settings.col.politeness', 'Politeness')}</Typography></Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {status.languages.map((language) => (
-                      <Tr key={language.code}>
-                        <Td>
-                          <Typography>{language.name}</Typography>
-                        </Td>
-                        <Td>
-                          {language.target ? (
-                            <Typography>{language.target}</Typography>
-                          ) : (
-                            <Typography textColor="danger600" fontWeight="bold">
-                              {t('settings.notMapped', 'Not mapped: set its code under supertext.config.locales')}
-                            </Typography>
-                          )}
-                        </Td>
-                        <Td>
-                          <Typography>{politeness(language.politeness)}</Typography>
-                          {language.politeness !== 'default' && language.politenessSupported === false && (
-                            <Typography textColor="danger600" variant="pi">
-                              {' '}
-                              {t('settings.noPoliteness', 'Supertext offers no formal/informal choice for this language')}
-                            </Typography>
-                          )}
-                        </Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-                <Typography variant="pi" textColor="neutral600">
-                  {t(
-                    'settings.languages.help',
-                    'Every Strapi locale needs a Supertext code: a locale that is one (de-CH, fr-CH, es, zh-Hans) is used as it is; map the others (e.g. de → de-CH) with code under supertext.config.locales in config/plugins, where politeness sets formal or informal.'
-                  )}
-                </Typography>
-              </Flex>
-            </Box>
+            <LanguagesCard />
           </Flex>
         </Layouts.Content>
       </Page.Main>

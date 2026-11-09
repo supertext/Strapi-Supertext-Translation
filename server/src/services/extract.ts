@@ -27,8 +27,16 @@ export interface SchemaLookup {
 }
 
 export interface Job {
+  /**
+   * Stable key of the text in the entry: the attribute path, e.g. `title`, `seo.metaTitle`,
+   * `sections.0.quote`, `body.1.0` (a blocks field: the index in the field, then in `children`).
+   * Used as the segment key of translation files.
+   */
+  key: string;
   segment: Segment;
   apply(translation: string): void;
+  /** Puts back the value another version of the entry (same shape, e.g. the target locale) has at this place, if any. */
+  keep(other: Record<string, unknown>): void;
 }
 
 export interface Extraction {
@@ -58,7 +66,7 @@ const isTranslatableString = (value: unknown): value is string =>
 export function extract(attributes: Attributes, source: Record<string, unknown>, schema: SchemaLookup): Extraction {
   const jobs: Job[] = [];
   const uidFields: string[] = [];
-  const data = walk(attributes, source, schema, jobs, true, uidFields);
+  const data = walk(attributes, source, schema, jobs, true, uidFields, []);
   return { data, jobs, uidFields };
 }
 
@@ -68,7 +76,8 @@ function walk(
   schema: SchemaLookup,
   jobs: Job[],
   topLevel: boolean,
-  uidFields: string[]
+  uidFields: string[],
+  path: string[]
 ): Record<string, unknown> {
   const data: Record<string, unknown> = {};
 
@@ -89,7 +98,16 @@ function walk(
         data[name] = value;
         if (isTranslatableString(value)) {
           // Markdown (richtext) travels as plain text so its syntax survives.
-          jobs.push({ segment: { text: value, html: false }, apply: (t) => (data[name] = t) });
+          const at = [...path, name];
+          jobs.push({
+            key: at.join('.'),
+            segment: { text: value, html: false },
+            apply: (t) => (data[name] = t),
+            keep: (other) => {
+              const kept = valueAt(other, at);
+              if (typeof kept === 'string' && kept.trim() !== '') data[name] = kept;
+            },
+          });
         }
         break;
       }
@@ -97,7 +115,7 @@ function walk(
       case 'blocks': {
         const blocks = structuredClone(value);
         data[name] = blocks;
-        collectBlocks(blocks, jobs);
+        collectBlocks(blocks, jobs, [...path, name], []);
         break;
       }
 
@@ -120,18 +138,26 @@ function walk(
 
       case 'component': {
         const componentAttributes = schema.component(attribute.component as string);
-        const one = (item: unknown) =>
-          item ? walk(componentAttributes, item as Record<string, unknown>, schema, jobs, false, uidFields) : null;
-        data[name] = attribute.repeatable ? (Array.isArray(value) ? value.map(one) : []) : one(value);
+        const one = (item: unknown, at: string[]) =>
+          item ? walk(componentAttributes, item as Record<string, unknown>, schema, jobs, false, uidFields, at) : null;
+        data[name] = attribute.repeatable
+          ? Array.isArray(value)
+            ? value.map((item, i) => one(item, [...path, name, String(i)]))
+            : []
+          : one(value, [...path, name]);
         break;
       }
 
       case 'dynamiczone': {
         data[name] = Array.isArray(value)
-          ? value.map((item) => {
+          ? value.map((item, i) => {
               const { __component } = item as { __component: string };
               // Mutate the walked object (don't spread it): the jobs' setters point at it.
-              const entry = walk(schema.component(__component), item as Record<string, unknown>, schema, jobs, false, uidFields);
+              const entry = walk(schema.component(__component), item as Record<string, unknown>, schema, jobs, false, uidFields, [
+                ...path,
+                name,
+                String(i),
+              ]);
               return Object.assign(entry, { __component });
             })
           : [];
@@ -148,23 +174,47 @@ function walk(
   return data;
 }
 
-function collectBlocks(nodes: unknown, jobs: Job[]): void {
+/**
+ * @param field   path of the blocks attribute
+ * @param indices position of `nodes`: index in the field's array, then in each `children`
+ */
+function collectBlocks(nodes: unknown, jobs: Job[], field: string[], indices: number[]): void {
   if (!Array.isArray(nodes)) {
     return;
   }
-  for (const node of nodes) {
+  nodes.forEach((node, i) => {
+    const at = [...indices, i];
     if (isInlineContainer(node)) {
       if (hasText(node.children)) {
         const original: InlineNode[] = node.children;
         jobs.push({
+          key: [...field, ...at].join('.'),
           segment: { text: inlineToHtml(original), html: true },
           apply: (translation) => (node.children = htmlToInline(translation, original)),
+          keep: (other) => {
+            let kept: unknown = valueAt(other, field);
+            at.forEach((index, depth) => {
+              const list = depth === 0 ? kept : (kept as { children?: unknown } | undefined)?.children;
+              kept = Array.isArray(list) ? list[index] : undefined;
+            });
+            const children = (kept as { children?: unknown } | undefined)?.children;
+            if (Array.isArray(children)) node.children = structuredClone(children);
+          },
         });
       }
     } else if (node && typeof node === 'object' && (node as { type?: string }).type !== 'code') {
-      collectBlocks((node as { children?: unknown }).children, jobs);
+      collectBlocks((node as { children?: unknown }).children, jobs, field, at);
     }
+  });
+}
+
+/** The value at an attribute path (`['sections', '0', 'quote']`) of an entry, undefined if it has none. */
+function valueAt(entry: unknown, path: string[]): unknown {
+  let value = entry;
+  for (const part of path) {
+    value = value && typeof value === 'object' ? (value as Record<string, unknown>)[part] : undefined;
   }
+  return value;
 }
 
 /** Builds a populate object that loads components, dynamic zones and media. */
