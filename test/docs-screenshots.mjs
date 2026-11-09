@@ -29,6 +29,8 @@ await page.getByText('API key checked: the connection to Supertext works.').wait
 await page.waitForTimeout(800);
 // Show the endpoint users will see (the screenshot run uses a local stand-in).
 await page.getByText(/Endpoint:/).evaluate((el) => (el.textContent = 'Endpoint: https://api.supertext.com/v1/'));
+// A fixed time for the key check, so the image only changes when the page does (CI regenerates it).
+await page.getByText(/^Last checked:/).evaluate((el) => (el.textContent = 'Last checked: 10/14/2026, 12:01:04 AM'));
 // The settings page scrolls inside Strapi's layout: a taller window shows all of it.
 await page.setViewportSize({ width: 1400, height: 1240 });
 await page.waitForTimeout(500);

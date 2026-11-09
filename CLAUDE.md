@@ -90,3 +90,4 @@ AI file translation API v1, same as the WordPress plugin: POST HTML file → pol
 - Test UI changes in `demo/` against the mock (`npm run mock`, `npm run demo:install`, `cd demo && npm run develop`).
 - Commando Center (version reports, key check, ping): `server/src/reporting.ts` on Plugin Health's `InstallationReporter` with the SDK's key check; setting `versionReports` / `SUPERTEXT_VERSION_REPORTS`; state in the core store; public `GET /api/supertext/ping`. See `docs/DEVELOPER.md` → *Commando Center*.
 - `main` deploys the demo to Railway (project `supertext-cms-demos`, service `Strapi`) via the `Dockerfile`.
+- End-to-end tests against the real Supertext API: `.github/workflows/e2e.yml` with `test/e2e/` (see "End-to-end tests" in `docs/DEVELOPER.md`). The key is only the GitHub secret `SUPERTEXT_API_KEY`, set by Remy; sessions don't use a live key. Behaviour changes need matching checks in `test/e2e/live.mjs`.

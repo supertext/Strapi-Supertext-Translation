@@ -145,3 +145,6 @@ demo/.strapi-updater.json
 test/docs/movie/out/
 test/docs/movie/work/
 test/docs/movie/work-install/
+# End-to-end test
+/test/e2e/node_modules/
+/test/e2e/artifacts/
