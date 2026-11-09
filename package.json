@@ -60,7 +60,7 @@
     "docs:movie:install": "node test/docs-movie-install.mjs"
   },
   "dependencies": {
-    "node-html-parser": "^9.0.6"
+    "node-html-parser": "^9.0.7"
   },
   "devDependencies": {
     "@strapi/design-system": "^2.2.4",
