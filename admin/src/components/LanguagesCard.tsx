@@ -207,7 +207,7 @@ export const LanguagesCard = () => {
                           </Typography>
                         ) : !code ? (
                           <Typography variant="pi" textColor="danger600">
-                            {t('settings.noDefault', 'No default for this locale: choose its Supertext language, otherwise it can’t be translated.')}
+                            {t('settings.noDefault', 'No default for this locale: choose its Supertext language, otherwise it can\'t be translated.')}
                           </Typography>
                         ) : null}
                       </Flex>
@@ -262,7 +262,7 @@ export const LanguagesCard = () => {
           {page.reviewAvailable
             ? t(
                 'settings.review.help',
-                'Translation review: translations into this locale go through Supertext’s review service, so reviewers can check and correct them on the website with the Supertext Localization Review extension. Their corrections are used the next time the entry is translated.'
+                'Translation review: translations into this locale go through Supertext\'s review service, so reviewers can check and correct them on the website with the Supertext Localization Review extension. Their corrections are used the next time the entry is translated.'
               )
             : t('settings.review.off', 'Translation review is turned off for every locale (reviewUrl is empty in config/plugins).')}
         </Typography>
