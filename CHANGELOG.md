@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Tested with Strapi 5.61.1 (the demo moved from 5.61.0 to 5.61.1). The demo now runs on Node.js 26, the current LTS version (was 22).
+
 ## 1.0.0 — 2026-11-10
 
 First stable release. Every plugin release is now tested end to end against the live Supertext API (`.github/workflows/e2e.yml`).

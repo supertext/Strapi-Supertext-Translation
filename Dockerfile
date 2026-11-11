@@ -1,7 +1,7 @@
 # Demo image: builds the plugin, installs it into the demo Strapi app, runs it.
 # Railway builds this automatically; locally: docker build -t supertext-strapi . && docker run -p 1337:1337 --env-file demo/.env supertext-strapi
 
-FROM node:22-bookworm-slim AS build
+FROM node:26-bookworm-slim AS build
 WORKDIR /src
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
@@ -14,7 +14,7 @@ WORKDIR /src/demo
 RUN npm install ./plugin.tgz --no-audit --no-fund \
  && NODE_ENV=production npm run build
 
-FROM node:22-bookworm-slim
+FROM node:26-bookworm-slim
 ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=build /src/demo ./

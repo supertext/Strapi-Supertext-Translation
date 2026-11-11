@@ -23,6 +23,10 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "react-intl"  # Strapi 5's admin provides react-intl 6
         update-types: ["version-update:semver-major"]
+      - dependency-name: "@strapi/design-system"  # Strapi's admin pins @strapi/design-system 2.2.4 exactly
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "@strapi/icons"  # Strapi's admin pins @strapi/icons 2.2.4 exactly
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
     groups:
       minor-and-patch:
         update-types: ["minor", "patch"]
