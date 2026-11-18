@@ -6,7 +6,7 @@ For administrators setting up the plugin in a Strapi project.
 
 | | |
 | --- | --- |
-| Strapi | 5.56 or newer (tested with 5.61) |
+| Strapi | 5.56 or newer (tested with 5.62) |
 | Node.js | 22 or newer (26, the current LTS version, recommended; tested with 22, 24 and 26). Node.js 20 is no longer supported (end of life since 30 April 2026). |
 | Database | Any database Strapi supports (tested with SQLite; the demo runs on PostgreSQL) |
 | Strapi i18n | Enabled for every content type you want to translate (*Content-Type Builder → Advanced settings → Internationalization*), with the target languages added under *Settings → Internationalization* |

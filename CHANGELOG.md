@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Tested with Strapi 5.61.1 (the demo moved from 5.61.0 to 5.61.1). The demo now runs on Node.js 26, the current LTS version (was 22).
+- Tested with Strapi 5.62.0 (the demo moved from 5.61.0 to 5.62.0; development setup on `@strapi/design-system` and `@strapi/icons` 2.3.1, as Strapi 5.62 ships them). The demo now runs on Node.js 26, the current LTS version (was 22).
 
 ## 1.0.0 — 2026-11-10
 
