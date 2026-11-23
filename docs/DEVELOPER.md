@@ -257,7 +257,7 @@ The script writes the GIF (800 px, 12 fps, keep it under 3 MB) to `docs/images/d
 
 ## Demo deployment (Railway)
 
-The Railway service `Strapi` in project `supertext-cms-demos` builds this repo's `Dockerfile` on every push to `main`. The image builds the plugin, installs it into `demo/`, builds the admin panel and runs `strapi start`.
+The Railway service `Strapi` in project `supertext-cms-demos` builds this repo's `Dockerfile` on every push to `main`. The image builds the plugin, installs it into `demo/`, builds the admin panel and runs `strapi start` directly (not through `npm`, so the SIGTERM Railway sends the old container on a redeploy ends it with exit code 0 instead of a *Deploy Crashed* email).
 
 Service variables: `DATABASE_URL` (from the Postgres service), `APP_KEYS`, `ADMIN_JWT_SECRET`, `API_TOKEN_SALT`, `TRANSFER_TOKEN_SALT`, `JWT_SECRET`, `ENCRYPTION_KEY`, and `SUPERTEXT_API_KEY` (set by hand in the Railway dashboard). Uploads live on the volume mounted at `/app/public/uploads`.
 
