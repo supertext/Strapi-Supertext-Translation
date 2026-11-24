@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { absoluteUrl, Reporting, siteUrl, versionReportsEnabled, type ReportingSettings } from '../server/src/reporting';
+import { absoluteUrl, installedPlugins, Reporting, siteUrl, versionReportsEnabled, type ReportingSettings } from '../server/src/reporting';
 import { pluginVersion } from '../server/src/version';
 import { SDK_VERSION } from '../server/src/vendor/supertext-sdk/index';
 
@@ -154,5 +154,47 @@ describe('Reporting', () => {
     const r = reporting({ apiKey: 'k1' }, fakeFetch(), broken);
     await expect(r.run('onRequest', 'https://cms.example.ch')).resolves.toBeNull();
     await expect(r.lastCheck()).resolves.toBeNull();
+  });
+});
+
+describe('Send configuration to Supertext', () => {
+  it('lists the installed plugins without Strapi’s own and this one', () => {
+    expect(
+      installedPlugins({
+        i18n: { packageInfo: { name: '@strapi/i18n', version: '5.57.0' } },
+        supertext: { packageInfo: { name: 'strapi-supertext-translation', version: '1.0.0' } },
+        seo: { packageInfo: { name: '@strapi-community/plugin-seo', version: '2.1.0' } },
+        local: {},
+      })
+    ).toEqual([
+      { name: '@strapi-community/plugin-seo', version: '2.1.0', active: true, type: 'plugin' },
+      { name: 'local', version: null, active: true, type: 'plugin' },
+    ]);
+    expect(installedPlugins(undefined)).toEqual([]);
+  });
+
+  it('sends the plugins and the language mapping in one extensions report', async () => {
+    const f = fakeFetch();
+    const r = reporting({ apiKey: 'k1' }, f);
+    const result = await r.sendConfiguration(
+      'https://cms.example.ch',
+      [{ name: '@strapi-community/plugin-seo', version: '2.1.0', active: true, type: 'plugin' }],
+      [{ code: 'de-CH', supertext: 'de-CH' }, { code: 'en-IE', supertext: null }]
+    );
+    expect(result?.sent).toBe(true);
+    expect(f.reports).toHaveLength(1);
+    expect(f.reports[0]).toMatchObject({
+      event: 'extensions',
+      extensions: [{ name: '@strapi-community/plugin-seo', version: '2.1.0' }],
+      languages: [{ code: 'de-CH', supertext: 'de-CH' }, { code: 'en-IE', supertext: null }],
+    });
+    expect(JSON.stringify(f.reports[0])).not.toContain('k1');
+  });
+
+  it('sends nothing with reports off', async () => {
+    const f = fakeFetch();
+    const r = reporting({ apiKey: 'k1', versionReports: false }, f);
+    await expect(r.sendConfiguration('https://cms.example.ch', [], [{ code: 'de', supertext: 'de-DE' }])).resolves.toBeNull();
+    expect(f.reports).toEqual([]);
   });
 });

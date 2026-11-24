@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { useIntl } from 'react-intl';
 import { Box, Button, Flex, Typography } from '@strapi/design-system';
-import { Layouts, Page, useFetchClient, useNotification } from '@strapi/strapi/admin';
-import { apiError, type KeyCheck, type PluginStatus } from '../api';
+import { Layouts, Page, useFetchClient, useNotification, useRBAC } from '@strapi/strapi/admin';
+import { apiError, PERMISSIONS, type KeyCheck, type PluginStatus } from '../api';
 import { PLUGIN_ID } from '../pluginId';
 import { errorText } from '../utils/errorText';
 import { getTranslation } from '../utils/getTranslation';
@@ -31,6 +31,8 @@ const Settings = () => {
   const [status, setStatus] = React.useState<PluginStatus | null>(null);
   const [check, setCheck] = React.useState<KeyCheck | null>(null);
   const [testing, setTesting] = React.useState(false);
+  const [sending, setSending] = React.useState(false);
+  const { allowedActions } = useRBAC({ update: PERMISSIONS.update });
   const t = (id: string, defaultMessage: string, values?: Record<string, string>) =>
     formatMessage({ id: getTranslation(id), defaultMessage }, values);
 
@@ -61,6 +63,28 @@ const Settings = () => {
       toggleNotification({ type: 'danger', message: errorText(formatMessage, apiError(error)) });
     } finally {
       setTesting(false);
+    }
+  };
+
+  /** "Send configuration to Supertext": installed plugins and the language mapping, for Supertext support. */
+  const sendConfiguration = async () => {
+    setSending(true);
+    try {
+      const { data } = await post<{ sent: boolean | null; extensions: number; languages: number }>(`/${PLUGIN_ID}/send-configuration`);
+      if (data.sent === null) {
+        toggleNotification({ type: 'warning', message: t('settings.config.off', 'Version information is off (versionReports or SUPERTEXT_VERSION_REPORTS): nothing was sent.') });
+      } else if (data.sent) {
+        toggleNotification({
+          type: 'success',
+          message: t('settings.config.sent', 'Sent: {extensions} plugins, {languages} languages.', { extensions: String(data.extensions), languages: String(data.languages) }),
+        });
+      } else {
+        toggleNotification({ type: 'danger', message: t('settings.config.failed', "The configuration couldn't be sent. Try again later.") });
+      }
+    } catch (error) {
+      toggleNotification({ type: 'danger', message: errorText(formatMessage, apiError(error)) });
+    } finally {
+      setSending(false);
     }
   };
 
@@ -158,6 +182,21 @@ const Settings = () => {
                     'Sends the site URL and the versions of this plugin, Strapi and the runtime to Supertext after an update and when the API key changes, so Supertext support can see which version you run. No content, no API key and no personal data are sent. Turn it off with versionReports: false in config/plugins or SUPERTEXT_VERSION_REPORTS=0.'
                   )}
                 </Typography>
+                {allowedActions.canUpdate && (
+                  <Box paddingTop={2}>
+                    <Button variant="secondary" onClick={sendConfiguration} loading={sending} disabled={!status.reports?.enabled} data-supertext-send-configuration>
+                      {t('settings.config', 'Send configuration to Supertext')}
+                    </Button>
+                    <Box paddingTop={1}>
+                      <Typography variant="pi" textColor="neutral600">
+                        {t(
+                          'settings.config.help',
+                          "Sends Supertext the plugins installed here (name, version; Strapi's own are left out) and the Supertext language of each locale, so Supertext support can help better. Nothing else is sent."
+                        )}
+                      </Typography>
+                    </Box>
+                  </Box>
+                )}
               </Flex>
             </Box>
 

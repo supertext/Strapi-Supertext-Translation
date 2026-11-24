@@ -1,7 +1,7 @@
 import type { Core } from '@strapi/strapi';
 import { TranslationError, type TranslatorService } from '../services/translator';
 import { SupertextClient, SupertextError } from '../supertext/client';
-import { siteUrl } from '../reporting';
+import { installedPlugins, siteUrl } from '../reporting';
 import type { ReportingService } from '../services/reporting';
 import type { SettingsService } from '../services/settings';
 import { InvalidSettingsError } from '../language-settings';
@@ -82,6 +82,25 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => {
         const { apiKey, endpoint } = strapi.config.get('plugin::supertext') as { apiKey?: string; endpoint?: string };
         const check = result?.check ?? (await SupertextClient.checkApiKey(apiKey ?? '', endpoint));
         ctx.body = { ok: check.status === 'ok', check };
+      } catch (error) {
+        fail(ctx, error);
+      }
+    },
+
+    /**
+     * "Send configuration to Supertext": the installed plugins and the language mapping in one report
+     * (`{ sent, extensions, languages }`; `sent: null` while version reports are off).
+     */
+    async sendConfiguration(ctx: Ctx) {
+      try {
+        const extensions = installedPlugins(strapi.config.get('enabledPlugins'));
+        const languages = (await settings().languages()).map((row) => ({ code: row.code, supertext: row.target }));
+        if (!reporting().enabled()) {
+          ctx.body = { sent: null, extensions: extensions.length, languages: languages.length };
+          return;
+        }
+        const result = await reporting().sendConfiguration(site(ctx), extensions, languages);
+        ctx.body = { sent: Boolean(result?.sent), extensions: extensions.length, languages: languages.length };
       } catch (error) {
         fail(ctx, error);
       }

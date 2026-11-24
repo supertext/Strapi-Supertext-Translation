@@ -39,6 +39,7 @@ const reporting = ({ strapi }: { strapi: Core.Strapi }) => ({
   run: (...args: Parameters<Reporting['run']>) => reportingFor(strapi).run(...args),
   inBackground: (...args: Parameters<Reporting['inBackground']>) => reportingFor(strapi).inBackground(...args),
   lastCheck: () => reportingFor(strapi).lastCheck(),
+  sendConfiguration: (...args: Parameters<Reporting['sendConfiguration']>) => reportingFor(strapi).sendConfiguration(...args),
 });
 
 export default reporting;

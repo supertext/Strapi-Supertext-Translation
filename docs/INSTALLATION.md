@@ -114,7 +114,7 @@ npm run start      # or: npm run develop
 
 A new **Supertext translation** panel now appears in the right-hand column of every localized entry in the Content Manager, and **Settings → Supertext → Translation** shows the connection, the language combo boxes and the installed plugin version (for example *Plugin version: 0.1.0*, linked to that release's notes on GitHub). Mention the version when you contact support.
 
-![Settings → Supertext → Translation: connection status, links to create a Supertext account and generate an API key, the latest API key check, the endpoint, the plugin version and whether version information is sent](images/settings.png)
+![Settings → Supertext → Translation: connection status, links to create a Supertext account and generate an API key, the latest API key check, the endpoint, the plugin version, whether version information is sent, and the Send configuration to Supertext button](images/settings.png)
 
 ## 4. Check it works
 
@@ -137,6 +137,8 @@ A new **Supertext translation** panel now appears in the right-hand column of ev
 ## Version information and the API key check
 
 **Send version information to Supertext** is on by default. The plugin then sends the site URL and the versions of this plugin, Strapi and Node.js to Supertext after an update and when the API key changes, so Supertext support can see which version you run. A report contains exactly: the site URL (Strapi's `server.url` if it is an absolute URL, else the address the admin request came in on), the plugin's name (`Strapi-Supertext-Translation`) and version, the Strapi and Node.js versions, the Supertext SDK version, whether a key is set, the result of the API key check below (status, time, HTTP status, Supertext's error code) and the address of the ping endpoint. **No content, no API key and no personal data are sent.** Reports go from the Strapi server, never from the browser; a report that fails is not retried for an hour and never slows down or breaks a translation. To turn it off, set `versionReports: false` in the plugin's config or `SUPERTEXT_VERSION_REPORTS=0` in the environment and restart Strapi: nothing is sent at all then, and the ping endpoint answers 404. The settings page shows whether it is on.
+
+**Send configuration to Supertext** (settings page, administrators with *Settings → Supertext → Update*): when you contact Supertext support, this button sends, in one report, the plugins installed in Strapi (name and version; Strapi's own are left out) and the Supertext language of each locale. Nothing else is sent, and nothing at all while version information is off.
 
 **The API key check** runs whether or not version information is sent: when the plugin's admin code first runs with a key it hasn't checked yet (the key is compared by a fingerprint kept in Strapi's database, never the key itself), on **Test connection**, and when Supertext rejects the key during a translation. It's Supertext's cost-free `features` call; nothing is translated or billed. The settings page shows the latest result with its time: *the connection works*, *Supertext rejected the API key* (with the links to create an account and generate a key), *no API key is set*, *Supertext can't be reached* or *Supertext answered with an error*.
 

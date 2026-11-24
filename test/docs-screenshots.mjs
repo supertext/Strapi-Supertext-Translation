@@ -65,7 +65,7 @@ await page.getByRole('checkbox', { name: /German/ }).click();
 await page.waitForTimeout(300);
 await shot('panel-select', { clip: await box() });
 await page.getByRole('button', { name: 'Translate with Supertext' }).click();
-await page.getByText(/created \(/).first().waitFor({ timeout: 30000 });
+await page.getByText(/created \(/).first().waitFor({ timeout: 300000 });
 await page.waitForTimeout(400);
 await shot('panel-done', { clip: await box() });
 await page.getByRole('button', { name: 'Open' }).first().click();

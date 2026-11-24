@@ -15,8 +15,10 @@ import {
   pingResponse,
   reporterState,
   reportsEnabled,
+  type Extension,
   type KeyCheck,
   type KeyChecker,
+  type LanguageMapping,
   type PingResponse,
   type ReporterOptions,
   type ReporterResult,
@@ -76,6 +78,24 @@ export const absoluteUrl = (value: unknown): string | null => {
 export const siteUrl = (serverUrl: unknown, requestOrigin?: string | null): string | null =>
   absoluteUrl(serverUrl) ?? absoluteUrl(requestOrigin);
 
+/** Strapi's own plugins (`@strapi/…`) and this one: not sent by "Send configuration to Supertext". */
+const CORE_PLUGIN = /^@strapi\//;
+
+/**
+ * The installed Strapi plugins for "Send configuration to Supertext", from Strapi's `enabledPlugins`
+ * (`{ <name>: { info, packageInfo } }`): npm name and version, Strapi's own and this plugin left out.
+ */
+export const installedPlugins = (enabledPlugins: unknown): Extension[] => {
+  const out: Extension[] = [];
+  for (const [name, plugin] of Object.entries((enabledPlugins ?? {}) as Record<string, { packageInfo?: { name?: unknown; version?: unknown } }>)) {
+    const pkg = plugin?.packageInfo ?? {};
+    const packageName = typeof pkg.name === 'string' && pkg.name ? pkg.name : name;
+    if (CORE_PLUGIN.test(packageName) || name === 'supertext') continue;
+    out.push({ name: packageName, version: typeof pkg.version === 'string' ? pkg.version : null, active: true, type: 'plugin' });
+  }
+  return out.sort((a, b) => a.name.localeCompare(b.name));
+};
+
 /**
  * The plugin's side of the Commando Center. One per Strapi process; calls are serialized so two
  * requests don't report twice. Nothing here ever throws into a request.
@@ -98,7 +118,7 @@ export class Reporting {
     return pingResponse(typeof challenge === 'string' ? challenge : null, { plugin: PLUGIN_NAME, enabled: this.enabled });
   }
 
-  reporter(url: string): InstallationReporter {
+  reporter(url: string, languages?: LanguageMapping[]): InstallationReporter {
     const settings = this.ctx.settings();
     const prefix = `/${String(this.ctx.apiPrefix() || '/api').replace(/^\/+|\/+$/g, '')}`.replace(/^\/$/, '');
     return new InstallationReporter({
@@ -109,6 +129,7 @@ export class Reporting {
       sdkVersion: SDK_VERSION,
       callbackUrl: `${url}${prefix}${PING_PATH}`,
       keyChecker: this.keyChecker(settings),
+      ...(languages ? { languages: () => languages } : {}),
       ...this.ctx.reporterOverrides,
     });
   }
@@ -142,6 +163,27 @@ export class Reporting {
         return result;
       } catch (error) {
         this.ctx.logger.debug(`[supertext] version report skipped: ${(error as Error)?.message ?? error}`);
+        return null;
+      }
+    });
+    this.#queue = task;
+    return task;
+  }
+
+  /**
+   * "Send configuration to Supertext" (Settings → Supertext): the installed plugins and every locale with
+   * its Supertext code in one `extensions` report, sent now (also within the hour after a failed report).
+   * Null while version reports are off or without a site URL. Never throws.
+   */
+  sendConfiguration(url: string | null, extensions: Extension[], languages: LanguageMapping[]): Promise<ReporterResult | null> {
+    const task = this.#queue.then(async () => {
+      if (!url || !this.enabled) return null;
+      try {
+        const result = await this.reporter(url, languages).sendExtensions(await this.#load(), extensions);
+        await this.ctx.storage.set(result.state);
+        return result;
+      } catch (error) {
+        this.ctx.logger.debug(`[supertext] configuration not sent: ${(error as Error)?.message ?? error}`);
         return null;
       }
     });
