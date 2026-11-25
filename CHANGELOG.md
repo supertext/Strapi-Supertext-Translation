@@ -4,7 +4,7 @@
 
 - Added: *Send configuration to Supertext* on *Settings → Supertext* (administrators): sends the installed Strapi plugins and the language mapping to Supertext support in one report (Supertext Plugin Health 0.4.0). Nothing is sent while version reports are off.
 - Changed: the docs screenshots show real Supertext translations: CI takes them with the live API (secret `SUPERTEXT_API_KEY`); the stand-in API translates only without the key. Version reports still go to the stand-in.
-- Tested with Strapi 5.62.0 (the demo moved from 5.61.0 to 5.62.0; development setup on `@strapi/design-system` and `@strapi/icons` 2.3.1, as Strapi 5.62 ships them). The demo now runs on Node.js 26, the current LTS version (was 22).
+- Tested with Strapi 5.63.0 (the demo moved from 5.61.0 to 5.63.0; development setup on `@strapi/design-system` and `@strapi/icons` 2.3.1, as Strapi 5.62 and 5.63 ship them). The demo now runs on Node.js 26, the current LTS version (was 22).
 
 ## 1.0.0 — 2026-11-10
 
