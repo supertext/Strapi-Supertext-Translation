@@ -69,7 +69,7 @@ describe('language settings (combo boxes)', () => {
     const service = settingsService({ strapi } as never);
     const page = await service.save({ de: { code: 'de-CH' }, en: { code: 'en-US' } });
     expect(store.get('plugin_supertext_languages')).toEqual({ de: { code: 'de-CH' }, en: { code: 'en-US' } });
-    expect(page.targets.length).toBe(37);
+    expect(page.targets.length).toBe(41);
     expect(page.languages.find((l) => l.code === 'en')).toMatchObject({ saved: 'en-US', target: 'en-GB', override: { code: 'en-GB' } });
     expect(await service.mapping()).toEqual({ de: { code: 'de-CH' }, en: { code: 'en-GB' } });
     await expect(service.save({ de: { code: 'klingon' } })).rejects.toBeInstanceOf(InvalidSettingsError);

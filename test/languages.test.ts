@@ -66,7 +66,7 @@ describe('language codes (mapping, exact match, default)', () => {
 
   it('offers every Supertext target for the combo box', () => {
     const options = targetOptions();
-    expect(options.length).toBe(37);
+    expect(options.length).toBe(41);
     expect(options).toContainEqual({ code: 'de-CH', name: 'German (Switzerland)', politeness: true });
     expect(options.find((o) => o.code === 'en-US')?.politeness).toBe(false);
   });
